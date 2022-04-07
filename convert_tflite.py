@@ -13,6 +13,7 @@ flags.DEFINE_string('output', './checkpoints/yolov4-416-fp32.tflite', 'path to o
 flags.DEFINE_integer('input_size', 416, 'path to output')
 flags.DEFINE_string('quantize_mode', 'float32', 'quantize mode (int8, float16, float32, mixedint)')
 flags.DEFINE_string('dataset', "/Volumes/Elements/data/coco_dataset/coco/5k.txt", 'path to dataset')
+flags.DEFINE_boolean('int8io', False, 'make input and output tensors int8')
 
 def representative_data_gen():
   lines = open(FLAGS.dataset).read().split("\n")
@@ -53,9 +54,10 @@ def save_tflite():
     converter.target_spec.supported_types = [tf.float16]
   elif FLAGS.quantize_mode == 'int8':
     # https://www.tensorflow.org/lite/performance/post_training_quantization#integer_only
-    #converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-    #converter.inference_input_type = tf.uint8
-    #converter.inference_output_type = tf.int8
+    if FLAGS.int8io == True :
+      converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+      converter.inference_input_type = tf.uint8
+      converter.inference_output_type = tf.int8
     converter.representative_dataset = representative_data_gen
   elif FLAGS.quantize_mode == 'mixedint':
     # https://www.tensorflow.org/lite/performance/post_training_quantization#integer_only_16-bit_activations_with_8-bit_weights_experimental
@@ -83,7 +85,10 @@ def demo():
 
   input_shape = input_details[0]['shape']
 
-  input_data = np.array(np.random.random_sample(input_shape), dtype=np.float32)
+  if FLAGS.int8io == True:
+    input_data = np.array(np.random.random_sample(input_shape), dtype=np.uint8)
+  else:
+    input_data = np.array(np.random.random_sample(input_shape), dtype=np.float32)
 
   interpreter.set_tensor(input_details[0]['index'], input_data)
   interpreter.invoke()

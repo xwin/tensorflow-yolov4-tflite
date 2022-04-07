@@ -12,6 +12,7 @@ flags.DEFINE_integer('input_size', 416, 'define input size of export model')
 flags.DEFINE_float('score_thres', 0.2, 'define score threshold')
 flags.DEFINE_string('framework', 'tf', 'define what framework do you want to convert (tf, trt, tflite)')
 flags.DEFINE_string('model', 'yolov4', 'yolov3 or yolov4')
+flags.DEFINE_boolean('short', False, 'short model without yolo layer')
 
 def save_tf():
   STRIDES, ANCHORS, NUM_CLASS, XYSCALE = utils.load_config(FLAGS)
@@ -41,7 +42,10 @@ def save_tf():
   pred_bbox = tf.concat(bbox_tensors, axis=1)
   pred_prob = tf.concat(prob_tensors, axis=1)
   if FLAGS.framework == 'tflite':
-    pred = (pred_bbox, pred_prob)
+    if FLAGS.short == False :
+      pred = (pred_bbox, pred_prob)
+    else:
+      pred = feature_maps
   else:
     boxes, pred_conf = filter_boxes(pred_bbox, pred_prob, score_threshold=FLAGS.score_thres, input_shape=tf.constant([FLAGS.input_size, FLAGS.input_size]))
     pred = tf.concat([boxes, pred_conf], axis=-1)
