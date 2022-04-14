@@ -35,7 +35,7 @@ def query_yes_no(question, default="yes", bypass=False):
   while True:
     sys.stdout.write(question + prompt)
     if bypass:
-        break
+      return valid[default]
     if sys.version_info[0] == 3:
       choice = input().lower() # if version 3 of Python
     else:
@@ -87,7 +87,7 @@ with open('../../data/classes/coco.names') as f:
                        "into \"" + new_class_name + "\"?"
                       )
 
-        if query_yes_no(y_n_message, bypass=args.yes):
+        if (args.yes or query_yes_no(y_n_message, bypass=args.yes)):
           os.chdir("../ground-truth")
           rename_class(current_class_name, new_class_name)
           os.chdir("../predicted")

@@ -46,11 +46,10 @@ def main(_argv):
         print(input_details)
         print(output_details)
     else:
-        saved_model_loaded = tf.saved_model.load(FLAGS.weights, tags=[tag_constants.SERVING])
-        infer = saved_model_loaded.signatures['serving_default']
+        model = tf.keras.models.load_model(FLAGS.weights, compile=True)
 
     num_lines = sum(1 for line in open(FLAGS.annotation_path))
-    with open(cfg.TEST.ANNOT_PATH, 'r') as annotation_file:
+    with open(FLAGS.annotation_path, 'r') as annotation_file:
         for num, line in enumerate(annotation_file):
             annotation = line.strip().split()
             image_path = annotation[0]
@@ -93,11 +92,9 @@ def main(_argv):
                 else:
                     boxes, pred_conf = filter_boxes(pred[0], pred[1], score_threshold=0.25)
             else:
-                batch_data = tf.constant(image_data)
-                pred_bbox = infer(batch_data)
-                for key, value in pred_bbox.items():
-                    boxes = value[:, :, 0:4]
-                    pred_conf = value[:, :, 4:]
+                value = model(tf.constant(image_data), training=False)
+                boxes = value[:, :, 0:4]
+                pred_conf = value[:, :, 4:]
 
             boxes, scores, classes, valid_detections = tf.image.combined_non_max_suppression(
                 boxes=tf.reshape(boxes, (tf.shape(boxes)[0], -1, 1, 4)),
