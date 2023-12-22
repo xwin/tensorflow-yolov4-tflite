@@ -13,8 +13,13 @@ flags.DEFINE_float('score_thres', 0.2, 'define score threshold')
 flags.DEFINE_string('framework', 'tf', 'define what framework do you want to convert (tf, trt, tflite)')
 flags.DEFINE_string('model', 'yolov4', 'yolov3 or yolov4')
 flags.DEFINE_boolean('short', False, 'short model without yolo layer')
+flags.DEFINE_string('classes', None, 'path to the classes file, if not provided coco.names is used')
 
 def save_tf():
+  if None != FLAGS.classes:
+    cfg.YOLO.CLASSES = FLAGS.classes
+    print("Using classes %s" % cfg.YOLO.CLASSES)
+
   STRIDES, ANCHORS, NUM_CLASS, XYSCALE = utils.load_config(FLAGS)
 
   input_layer = tf.keras.layers.Input([FLAGS.input_size, FLAGS.input_size, 3])
