@@ -14,12 +14,13 @@ flags.DEFINE_integer('input_size', 416, 'path to output')
 flags.DEFINE_string('quantize_mode', 'float32', 'quantize mode (int8, float16, float32, mixedint)')
 flags.DEFINE_string('dataset', "/Volumes/Elements/data/coco_dataset/coco/5k.txt", 'path to dataset')
 flags.DEFINE_boolean('int8io', False, 'make input and output tensors int8')
+flags.DEFINE_boolean('short', False, 'model does not have yolo head')
 
 def representative_data_gen():
   lines = open(FLAGS.dataset).read().split("\n")
   line = 0
   found = 0
-  samples = 10
+  samples = 100
   
   for input_value in range(samples):
     line += 1
@@ -55,7 +56,8 @@ def save_tflite():
   elif FLAGS.quantize_mode == 'int8':
     # https://www.tensorflow.org/lite/performance/post_training_quantization#integer_only
     if FLAGS.int8io == True :
-      converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+      if FLAGS.short == True :
+        converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
       converter.inference_input_type = tf.uint8
       converter.inference_output_type = tf.int8
     converter.representative_dataset = representative_data_gen
