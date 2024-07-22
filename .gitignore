@@ -1,10 +1,16 @@
 bin
 checkpoints
 core/__pycache__/
-data/coco
+data/dataset/coco
 data/*.weights
 data/*.zip
 lib/
 lib64
 pyvenv.cfg
 share/
+mAP/bilinear_tf1
+mAP/bilinear_tf2
+mAP/ground-truth
+mAP/predicted
+mAP/nearest_tf1
+mAP/nearest_tf2
